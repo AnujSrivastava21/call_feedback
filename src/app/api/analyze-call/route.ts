@@ -18,11 +18,12 @@ export async function POST(req: NextRequest) {
     const tempPath = path.join(os.tmpdir(), file.name);
     fs.writeFileSync(tempPath, buffer);
 
-    const transcript = await transcribeAudio(tempPath);
+    const transcriptResult = await transcribeAudio(tempPath);
 
-    return NextResponse.json(transcript);
-  } catch (err: any) {
-    console.error("❌ Server error:", err.message);
+    return NextResponse.json(transcriptResult);
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("❌ Server error:", error.message);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -8,7 +8,12 @@ import FeedbackDisplay from '@/components/FeedbackDisplay';
 export default function FeedbackPage() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<any>(null);
+  const [feedback, setFeedback] = useState<null | {
+    transcript: string;
+    scores: Record<string, number>;
+    overallFeedback: string;
+    observation: string;
+  }>(null);
 
   const handleSubmit = async () => {
     if (!file) return;

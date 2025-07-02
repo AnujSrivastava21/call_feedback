@@ -1,6 +1,12 @@
-import axios from "axios";
-import fs from "fs-extra";
-import path from "path";
+import axios from 'axios';
+import fs from 'fs-extra';
+
+export interface TranscriptResult {
+  transcript: string;
+  scores: Record<string, number>;
+  overallFeedback: string;
+  observation: string;
+}
 
 export const parameterMeta = {
   greeting: { inputType: "PASS_FAIL", weight: 5 },
@@ -13,15 +19,15 @@ export const parameterMeta = {
   fatalIdentification: { inputType: "PASS_FAIL", weight: 5 },
   fatalTapeDiscloser: { inputType: "PASS_FAIL", weight: 10 },
   fatalToneLanguage: { inputType: "PASS_FAIL", weight: 15 },
-};
+} as const;
 
-const baseUrl = "https://api.assemblyai.com/v2";
-const headers = {
-  authorization: process.env.ASSEMBLYAI_API_KEY!,
-  "content-type": "application/json",
-};
+export async function transcribeAudio(filePath: string): Promise<TranscriptResult> {
+  const baseUrl = "https://api.assemblyai.com/v2";
+  const headers = {
+    authorization: process.env.ASSEMBLYAI_API_KEY!,
+    "content-type": "application/json",
+  };
 
-export async function transcribeAudio(filePath: string): Promise<any> {
   const audioData = await fs.readFile(filePath);
 
   const uploadRes = await axios.post(`${baseUrl}/upload`, audioData, {
@@ -30,6 +36,7 @@ export async function transcribeAudio(filePath: string): Promise<any> {
       "content-type": "application/octet-stream",
     },
   });
+
   const audioUrl = uploadRes.data.upload_url;
 
   const transcriptRes = await axios.post(
@@ -54,14 +61,9 @@ export async function transcribeAudio(filePath: string): Promise<any> {
     if (result.status === "completed") {
       const transcriptText = result.text;
       const scores = generateScores(transcriptText);
-      const overallFeedback = "Rule-based feedback applied.";
-      const observation = "Scoring based on keyword presence.";
-      return {
-        transcript: transcriptText,
-        scores,
-        overallFeedback,
-        observation,
-      };
+      const overallFeedback = generateOverallFeedback(scores);
+      const observation = generateObservations(transcriptText);
+      return { transcript: transcriptText, scores, overallFeedback, observation };
     } else if (result.status === "error") {
       throw new Error(`❌ Transcription failed: ${result.error}`);
     }
@@ -70,7 +72,7 @@ export async function transcribeAudio(filePath: string): Promise<any> {
   }
 }
 
-function generateScores(transcript: string) {
+function generateScores(transcript: string): Record<string, number> {
   const lower = transcript.toLowerCase();
   const scores: Record<string, number> = {};
 
@@ -84,6 +86,32 @@ function generateScores(transcript: string) {
   }
 
   return scores;
+}
+
+function generateOverallFeedback(scores: Record<string, number>): string {
+  const total = Object.values(scores).reduce((a, b) => a + b, 0);
+  if (total > 80) return "The agent was confident and persuasive.";
+  if (total > 50) return "The agent performed reasonably but missed key points.";
+  return "Agent's performance was poor and lacked important elements.";
+}
+
+function generateObservations(transcript: string): string {
+  const lower = transcript.toLowerCase();
+  const obs: string[] = [];
+
+  if (!lower.includes("disclaimer")) {
+    obs.push("Agent missed call disclaimer.");
+  }
+
+  if (lower.includes("penalty") && !lower.includes("recorded")) {
+    obs.push("Customer raised penalty objection but tape disclosure was missing.");
+  }
+
+  if (lower.includes("i understand") || lower.includes("i can help")) {
+    obs.push("Agent handled objection smoothly.");
+  }
+
+  return obs.join(" ") || "No significant observations.";
 }
 
 function checkKeywords(text: string, key: string): boolean {

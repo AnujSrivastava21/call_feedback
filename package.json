@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@deepgram/sdk": "^4.7.0",
     "axios": "^1.10.0",
     "formidable": "^3.5.4",
     "fs-extra": "^11.3.0",

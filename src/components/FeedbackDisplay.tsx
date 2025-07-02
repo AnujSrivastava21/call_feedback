@@ -1,13 +1,12 @@
 'use client';
+
 import React from 'react';
 
 type FeedbackData = {
   transcript: string;
-  scores?: {
-    [key: string]: number;
-  };
-  overallFeedback?: string;
-  observation?: string;
+  scores: Record<string, number>;
+  overallFeedback: string;
+  observation: string;
 };
 
 type Props = {
@@ -15,22 +14,15 @@ type Props = {
 };
 
 const FeedbackDisplay: React.FC<Props> = ({ data }) => {
-  const {
-    transcript,
-    scores = {}, // ✅ Avoid undefined crash
-    overallFeedback = '',
-    observation = '',
-  } = data;
+  const { transcript, scores, overallFeedback, observation } = data;
 
   return (
     <div className="p-6 bg-white shadow-md rounded-lg space-y-6 mt-8 border">
-      {/* 📝 Transcript */}
       <div>
         <h2 className="text-xl font-semibold text-gray-800 mb-1">📝 Transcript</h2>
-        <p className="text-gray-700">{transcript}</p>
+        <p className="text-gray-700 whitespace-pre-wrap">{transcript}</p>
       </div>
 
-      {/* ✅ Scores (if available) */}
       {Object.keys(scores).length > 0 && (
         <div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">✅ Parameter Scores</h2>
@@ -53,7 +45,6 @@ const FeedbackDisplay: React.FC<Props> = ({ data }) => {
         </div>
       )}
 
-      {/* 📝 Overall Feedback */}
       {overallFeedback && (
         <div>
           <h2 className="text-xl font-semibold text-gray-800 mb-1">📝 Overall Feedback</h2>
@@ -61,7 +52,6 @@ const FeedbackDisplay: React.FC<Props> = ({ data }) => {
         </div>
       )}
 
-      {/* 🔍 Observation */}
       {observation && (
         <div>
           <h2 className="text-xl font-semibold text-gray-800 mb-1">🔍 Observation</h2>

@@ -1,5 +1,3 @@
-// src/app/feedback/page.tsx
-
 'use client';
 
 import React, { useState } from 'react';
@@ -14,9 +12,8 @@ export default function FeedbackPage() {
 
   const handleSubmit = async () => {
     if (!file) return;
-
     setLoading(true);
-    setFeedback(null); // optional: clear old feedback
+    setFeedback(null);
 
     try {
       const formData = new FormData();
@@ -28,12 +25,12 @@ export default function FeedbackPage() {
       });
 
       if (!res.ok) throw new Error('Upload failed');
-
       const data = await res.json();
+
       setFeedback(data);
     } catch (err) {
       console.error(err);
-      alert("❌ Failed to analyze audio. Please try again.");
+      alert("❌ Failed to analyze audio.");
     } finally {
       setLoading(false);
     }
@@ -46,7 +43,6 @@ export default function FeedbackPage() {
       </h1>
 
       <AudioUpload onFileSelect={setFile} />
-
       {file && <AudioPlayer file={file} />}
 
       <div className="text-center">

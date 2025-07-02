@@ -9,7 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@deepgram/sdk": "^4.7.0",
+    "@deepgram/sdk": "^3.13.0",
+    "@google-cloud/speech": "^7.1.0",
     "axios": "^1.10.0",
     "formidable": "^3.5.4",
     "fs-extra": "^11.3.0",
